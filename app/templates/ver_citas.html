@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Mis Citas</h2>
+    <div class="row">
+        <div class="col-md-12">
+            <h3>Citas Agendadas</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Barbero</th>
+                        <th>Cliente</th>
+                        <th>Fecha y Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cita in citas %}
+                    <tr>
+                        <td>{{ cita.id }}</td>
+                        <td>{{ User.query.get(cita.barbero_id).username }}</td>
+                        <td>{{ User.query.get(cita.cliente_id).username }}</td>
+                        <td>{{ cita.fecha_hora.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">No tienes citas agendadas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a href="{{ url_for('main.agendar_cita') }}" class="btn btn-primary">Agendar Nueva Cita</a>
+</div>
+{% endblock %}

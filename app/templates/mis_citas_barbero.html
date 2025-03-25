@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Citas Asignadas BARBERO</h2>
+    {% if citas %}
+        <ul>
+            {% for cita in citas %}
+                <li>
+                    Cliente: {{ cita.cliente.username }}<br>
+                    Fecha y Hora: {{ cita.fecha_hora }}<br>
+                    <a href="{{ url_for('main_routes.cancelar_cita', cita_id=cita.id) }}">Cancelar Cita</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No tienes citas asignadas por el Momento</p>
+    {% endif %}
+</div>
+{% endblock %}
