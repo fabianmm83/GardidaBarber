@@ -1,0 +1,25 @@
+{% extends "shared/base.html" %} 
+{% block content %}
+<div class="container">
+    <h2>Agendar Cita</h2>
+    <!-- Cambiar el endpoint a 'main_routes.agendar_cita' -->
+    <form method="POST" action="{{ url_for('main_routes.agendar_cita') }}">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+            <label for="barbero">Seleccionar Barbero:</label>
+            {{ form.barbero(class="form-control", id="barbero") }}  <!-- Aquí se hace el campo de barbero -->
+        </div>
+        
+        <div class="form-group">
+            <label for="fecha_hora">Fecha y Hora:</label>
+            <!-- Usamos el campo 'fecha_hora' del formulario FlaskForm -->
+            {{ form.fecha_hora(class="form-control", id="fecha_hora", type="datetime-local") }}  <!-- Campo para la fecha y hora -->
+        </div>
+        
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Agendar Cita</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

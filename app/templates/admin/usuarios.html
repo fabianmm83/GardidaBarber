@@ -1,0 +1,66 @@
+{% extends "shared/base.html" %} 
+{% block content %}
+<div class="container">
+    <h2>Gestión de Usuarios</h2>
+    
+    <h3>Barberos</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for barbero in barberos %}
+            <tr>
+                <td>{{ barbero.id }}</td>
+                <td>{{ barbero.username }}</td>
+                <td>{{ barbero.role }}</td>
+                <td>{{ 'Activo' if barbero.activo else 'Inactivo' }}</td>
+                <td>
+                    <a href="{{ url_for('main_routes.editar_usuario', id=barbero.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">No hay barberos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Clientes</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.id }}</td>
+                <td>{{ cliente.username }}</td>
+                <td>{{ cliente.role }}</td>
+                <td>{{ 'Activo' if cliente.activo else 'Inactivo' }}</td>
+                <td>
+                    <a href="{{ url_for('main_routes.editar_usuario', id=cliente.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">No hay clientes registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

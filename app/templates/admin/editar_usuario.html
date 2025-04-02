@@ -1,0 +1,35 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Editar Usuario</h2>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+            <label for="username">Nombre de usuario</label>
+            {{ form.username(class="form-control", id="username") }}
+        </div>
+
+        <div class="form-group">
+            <label for="email">Correo electrónico</label>
+            {{ form.email(class="form-control", id="email") }}
+        </div>
+
+        <div class="form-group">
+            <label for="role">Rol</label>
+            {{ form.role(class="form-control", id="role") }}
+        </div>
+
+        <div class="form-group">
+            <label for="activo">Activo</label>
+            {{ form.activo(class="form-check-input", id="activo") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

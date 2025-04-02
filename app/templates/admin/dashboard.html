@@ -1,0 +1,106 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Panel de Administración</h2>
+    
+    <!-- Tarjetas de Resumen -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-users"></i> Clientes</h5>
+                    <h2 class="display-4">{{ total_clientes }}</h2>
+                    <a href="{{ url_for('main_routes.gestion_usuarios') }}?rol=cliente" 
+                       class="text-white">Ver todos</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-success h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-cut"></i> Barberos</h5>
+                    <h2 class="display-4">{{ total_barberos }}</h2>
+                    <a href="{{ url_for('main_routes.gestion_usuarios') }}?rol=barbero" 
+                       class="text-white">Ver todos</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-info h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-calendar-day"></i> Citas Hoy</h5>
+                    <h2 class="display-4">{{ citas_hoy }}</h2>
+                    <a href="{{ url_for('main_routes.ver_citas_admin') }}" 
+                       class="text-white">Ver citas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de Acciones Rápidas -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5><i class="fas fa-bolt"></i> Acciones Rápidas</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-2">
+                    <a href="{{ url_for('main_routes.agregar_producto') }}" 
+                       class="btn btn-outline-primary btn-block">
+                        <i class="fas fa-plus"></i> Nuevo Producto
+                    </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <a href="{{ url_for('main_routes.registrar_barbero') }}" 
+                       class="btn btn-outline-success btn-block">
+                        <i class="fas fa-user-plus"></i> Nuevo Barbero
+                    </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <a href="{{ url_for('main_routes.inventario') }}" 
+                       class="btn btn-outline-warning btn-block">
+                        <i class="fas fa-boxes"></i> Inventario
+                    </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <a href="{{ url_for('main_routes.ventas') }}" 
+                       class="btn btn-outline-info btn-block">
+                        <i class="fas fa-cash-register"></i> Ventas
+                    </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <a href="{{ url_for('main_routes.registro_ventas') }}" 
+                       class="btn btn-outline-secondary btn-block">
+                        <i class="fas fa-list-alt"></i> Registro de Ventas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluye Font Awesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    .card {
+        border-radius: 10px;
+        transition: transform 0.3s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    .btn-block {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+{% endblock %}

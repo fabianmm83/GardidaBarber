@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gardida BarberShop</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <!-- Logo de la barbería -->
+        <a class="navbar-brand" href="{{ url_for('main_routes.home') }}">
+            <img src="{{ url_for('static', filename='gardida_logo.png') }}" alt="Gardida BarberShop" class="navbar-logo">
+            Barbería Gardida
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                {% if current_user.is_authenticated %}
+                    <!-- Menú para clientes -->
+                    {% if current_user.is_cliente %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main_routes.agendar_cita') }}">Agendar Cita</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main_routes.mis_citas_cliente') }}">Mis Citas</a>
+                        </li>
+                    {% endif %}
+                    
+                    <!-- Menú para barberos -->
+                    {% if current_user.is_barbero %}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main_routes.ventas') }}"> Registar Ventas</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main_routes.mis_citas_barbero') }}">Mis Citas</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main_routes.inventario') }}">Inventario</a>
+    </li>
+{% endif %}
+                    
+                    <!-- Menú para administradores -->
+                    {% if current_user.is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main_routes.admin_dashboard') }}">Panel Admin</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main_routes.gestion_usuarios') }}">Usuarios</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main_routes.inventario') }}">Inventario</a>
+                        </li>
+                    {% endif %}
+                    
+                    <!-- Elemento común para cerrar sesión -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Cerrar Sesión</a>
+                    </li>
+                    
+                {% else %}
+                    <!-- Menú para usuarios no autenticados -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Iniciar Sesión</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">Registrarse</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

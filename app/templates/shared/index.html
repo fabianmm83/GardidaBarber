@@ -1,0 +1,12 @@
+{% extends "shared/base.html" %}  <!-- Cambiado a ruta completa -->
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Bienvenido a la Barbería Gardida</h1>
+    <p class="lead">Agenda tu cita con los mejores barberos de la ciudad.</p>
+    <hr class="my-4">
+    <p>Regístrate o inicia sesión para comenzar.</p>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}" role="button">Registrarse</a>
+    <a class="btn btn-success btn-lg" href="{{ url_for('auth.login') }}" role="button">Iniciar Sesión</a>
+ 
+</div>
+{% endblock %}

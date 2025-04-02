@@ -1,0 +1,122 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-dark text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus mr-2"></i>Registrar Nuevo Barbero
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Mostrar mensajes de error generales -->
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                {% for field, errors in form.errors.items() %}
+                                    {% for error in errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Nombre -->
+                        <div class="form-group">
+                            {{ form.nombre.label(class="font-weight-bold") }}
+                            {{ form.nombre(class="form-control form-control-lg" + (" is-invalid" if form.nombre.errors else ""), 
+                                placeholder="Ingresa el nombre del barbero") }}
+                            {% for error in form.nombre.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Apellido -->
+                        <div class="form-group">
+                            {{ form.apellido.label(class="font-weight-bold") }}
+                            {{ form.apellido(class="form-control form-control-lg" + (" is-invalid" if form.apellido.errors else ""), 
+                                placeholder="Ingresa el apellido del barbero") }}
+                            {% for error in form.apellido.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Teléfono -->
+                        <div class="form-group">
+                            {{ form.telefono.label(class="font-weight-bold") }}
+                            {{ form.telefono(class="form-control form-control-lg" + (" is-invalid" if form.telefono.errors else ""), 
+                                placeholder="Ej: +56912345678") }}
+                            {% for error in form.telefono.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="form-text text-muted">Formato internacional: +códigopaís número</small>
+                        </div>
+                        
+                        <!-- Correo -->
+                        <div class="form-group">
+                            {{ form.correo.label(class="font-weight-bold") }}
+                            {{ form.correo(class="form-control form-control-lg" + (" is-invalid" if form.correo.errors else ""), 
+                                placeholder="ejemplo@barberia.com") }}
+                            {% for error in form.correo.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="form-group">
+                            {{ form.password.label(class="font-weight-bold") }}
+                            {{ form.password(class="form-control form-control-lg" + (" is-invalid" if form.password.errors else ""), 
+                                placeholder="Mínimo 8 caracteres") }}
+                            {% for error in form.password.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Confirmar Contraseña -->
+                        <div class="form-group">
+                            {{ form.confirm_password.label(class="font-weight-bold") }}
+                            {{ form.confirm_password(class="form-control form-control-lg" + (" is-invalid" if form.confirm_password.errors else ""), 
+                                placeholder="Repite la contraseña") }}
+                            {% for error in form.confirm_password.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg mr-3">
+                                <i class="fas fa-save mr-2"></i>Registrar
+                            </button>
+                            <a href="{{ url_for('main_routes.gestion_usuarios') }}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times mr-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluye Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+    .form-control-lg {
+        font-size: 1.1rem;
+    }
+    .btn-lg {
+        min-width: 150px;
+    }
+    .invalid-feedback {
+        display: block;
+    }
+</style>
+{% endblock %}

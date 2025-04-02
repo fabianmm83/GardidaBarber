@@ -1,0 +1,78 @@
+{% extends "shared/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0" style="background-color: rgba(0, 0, 0, 0.7);">
+        <div class="card-header" style="background-color: rgba(0, 0, 0, 0.8);">
+            <h4 class="text-white"><i class="fas fa-file-invoice-dollar mr-2"></i>Registro Histórico de Ventas</h4>
+        </div>
+        <div class="card-body" style="background-color: rgba(0, 0, 0, 0.6);">
+            <div class="table-responsive">
+                <table class="table table-borderless table-hover">
+                    <thead>
+                        <tr > <!-- Fondo casi blanco con 90% opacidad -->
+                            <th class="text-dark font-weight-bold">Fecha</th>
+                            <th class="text-dark font-weight-bold">Producto</th>
+                            <th class="text-dark font-weight-bold">Cantidad</th>
+                            <th class="text-dark font-weight-bold">Precio Unitario</th>
+                            <th class="text-dark font-weight-bold">Total</th>
+                            <th class="text-dark font-weight-bold">Vendedor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venta in ventas.items %}
+                        <tr style="background-color: rgba(255, 255, 255, 0.1);" class="text-white">
+                            <td>{{ venta.fecha_venta.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ venta.producto.nombre }}</td>
+                            <td>{{ venta.cantidad }}</td>
+                            <td>${{ venta.precio_unitario }}</td>
+                            <td>${{ venta.total }}</td>
+                            <td>{{ venta.cliente.username }}</td>
+                        </tr>
+                        {% else %}
+                        <tr style="background-color: rgba(255, 255, 255, 0.1);" class="text-white">
+                            <td colspan="6" class="text-center">No hay ventas registradas</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginación -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if ventas.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link text-white" style="background-color: rgba(0, 0, 0, 0.5);" href="{{ url_for('main_routes.registro_ventas', page=ventas.prev_num) }}">
+                            &laquo; Anterior
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in ventas.iter_pages() %}
+                        {% if page_num %}
+                            <li class="page-item {% if page_num == ventas.page %}active{% endif %}">
+                                <a class="page-link text-white" style="background-color: rgba(0, 0, 0, 0.5);" href="{{ url_for('main_routes.registro_ventas', page=page_num) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link" style="background-color: rgba(0, 0, 0, 0.3);">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if ventas.has_next %}
+                    <li class="page-item">
+                        <a class="page-link text-white" style="background-color: rgba(0, 0, 0, 0.5);" href="{{ url_for('main_routes.registro_ventas', page=ventas.next_num) }}">
+                            Siguiente &raquo;
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

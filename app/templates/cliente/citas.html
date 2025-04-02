@@ -1,0 +1,20 @@
+{% extends "shared/base.html" %} 
+{% block content %}
+<div class="container">
+    <h2>Tus Citas Agendadas CLIENTE </h2>
+    {% if citas %}
+        <ul>
+            {% for cita in citas %}
+                <li>
+                    Barbero: {{ cita.barbero.username }}<br>
+                    Fecha y Hora: {{ cita.fecha_hora }}<br>
+                    <a href="{{ url_for('main_routes.agendar_cita') }}" class="btn btn-primary">Agendar Nueva Cita</a>
+
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No  tienes citas agendadas.</p>
+    {% endif %}
+</div>
+{% endblock %}
