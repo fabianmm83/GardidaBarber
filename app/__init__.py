@@ -3,7 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from config import Config  # Importa la configuración desde config.py
+from dotenv import load_dotenv
 
+load_dotenv()
 # Instancia de db y otras extensiones
 db = SQLAlchemy()
 login_manager = LoginManager()
