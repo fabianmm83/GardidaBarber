@@ -10,33 +10,108 @@
     
     <form method="POST" action="{{ url_for('main_routes.agregar_producto') }}">
         {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.nombre.label }}
-            {{ form.nombre(class="form-control") }}
-            {% for error in form.nombre.errors %}
-                <small class="text-danger">{{ error }}</small>
-            {% endfor %}
+        <div class="row">
+            <!-- Nombre del Producto -->
+            <div class="col-md-6 mb-3">
+                <div class="form-group">
+                    {{ form.nombre.label(class="form-label") }}
+                    {{ form.nombre(class="form-control") }}
+                    {% for error in form.nombre.errors %}
+                        <small class="text-danger">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Categoría del Producto -->
+            <div class="col-md-6 mb-3">
+                <div class="form-group">
+                    {{ form.categoria.label(class="form-label") }}
+                    {{ form.categoria(class="form-control") }}
+                    {% for error in form.categoria.errors %}
+                        <small class="text-danger">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            {{ form.descripcion.label }}
+
+        <div class="row">
+            <!-- Cantidad en Stock -->
+            <div class="col-md-6 mb-3">
+                <div class="form-group">
+                    {{ form.cantidad.label(class="form-label") }}
+                    {{ form.cantidad(class="form-control") }}
+                    {% for error in form.cantidad.errors %}
+                        <small class="text-danger">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Puedes agregar otro campo aquí si lo necesitas -->
+            <div class="col-md-6 mb-3">
+                <!-- Espacio reservado para otro campo -->
+            </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group mb-3">
+            {{ form.descripcion.label(class="form-label") }}
             {{ form.descripcion(class="form-control") }}
             {% for error in form.descripcion.errors %}
                 <small class="text-danger">{{ error }}</small>
             {% endfor %}
         </div>
-        <div class="form-group">
-            {{ form.cantidad.label }}
-            {{ form.cantidad(class="form-control") }}
-            {% for error in form.cantidad.errors %}
-                <small class="text-danger">{{ error }}</small>
-            {% endfor %}
+
+        <div class="row">
+            <!-- Costo de Adquisición -->
+            <div class="col-md-6 mb-3">
+                <div class="form-group">
+                    {{ form.costo.label(class="form-label") }}
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        {{ form.costo(class="form-control", step="0.01", min="0", required=True) }}
+                    </div>
+                    {% for error in form.costo.errors %}
+                        <small class="text-danger">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Precio de Venta -->
+            <div class="col-md-6 mb-3">
+                <div class="form-group">
+                    {{ form.precio.label(class="form-label") }}
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        {{ form.precio(class="form-control", step="0.01", min="0", required=True) }}
+                    </div>
+                    {% for error in form.precio.errors %}
+                        <small class="text-danger">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            {{ form.precio.label }}
-            {{ form.precio(class="form-control") }}
-            {% for error in form.precio.errors %}
-                <small class="text-danger">{{ error }}</small>
-            {% endfor %}
+
+        <!-- Calculadora de Margen -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Calculadora de Margen</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p class="mb-1">Margen de Ganancia:</p>
+                        <h4 id="margenGanancia">0%</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-1">Ganancia por Unidad:</p>
+                        <h4 id="gananciaUnidad">$0.00</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-1">Ganancia Total Potencial:</p>
+                        <h4 id="gananciaPotencial">$0.00</h4>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
@@ -50,15 +125,32 @@
     </form>
 </div>
 
-<!-- Incluye Font Awesome para los iconos -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-<style>
-    .form-group {
-        margin-bottom: 1.5rem;
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const costoInput = document.querySelector('[name="costo"]');
+    const precioInput = document.querySelector('[name="precio"]');
+    const cantidadInput = document.querySelector('[name="cantidad"]');
+    
+    function calcularMargen() {
+        const costo = parseFloat(costoInput.value) || 0;
+        const precio = parseFloat(precioInput.value) || 0;
+        const cantidad = parseInt(cantidadInput.value) || 0;
+        
+        if (costo > 0 && precio > 0) {
+            const margen = ((precio - costo) / costo) * 100;
+            const gananciaUnidad = precio - costo;
+            const gananciaPotencial = gananciaUnidad * cantidad;
+            
+            document.getElementById('margenGanancia').textContent = `${margen.toFixed(2)}%`;
+            document.getElementById('gananciaUnidad').textContent = `$${gananciaUnidad.toFixed(2)}`;
+            document.getElementById('gananciaPotencial').textContent = `$${gananciaPotencial.toFixed(2)}`;
+        }
     }
-    .btn {
-        min-width: 120px;
-    }
-</style>
+    
+    // Event listeners para calcular el margen cuando cambian los valores
+    costoInput.addEventListener('input', calcularMargen);
+    precioInput.addEventListener('input', calcularMargen);
+    cantidadInput.addEventListener('input', calcularMargen);
+});
+</script>
 {% endblock %}

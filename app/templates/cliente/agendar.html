@@ -1,25 +1,58 @@
-{% extends "shared/base.html" %} 
+{% extends "shared/base.html" %}
 {% block content %}
-<div class="container">
-    <h2>Agendar Cita</h2>
-    <!-- Cambiar el endpoint a 'main_routes.agendar_cita' -->
-    <form method="POST" action="{{ url_for('main_routes.agendar_cita') }}">
+<div class="container mt-4">
+    <h2>Agendar Nueva Cita</h2>
+    
+    <form method="POST" id="citaForm">
         {{ form.hidden_tag() }}
         
-        <div class="form-group">
-            <label for="barbero">Seleccionar Barbero:</label>
-            {{ form.barbero(class="form-control", id="barbero") }}  <!-- Aquí se hace el campo de barbero -->
+        <div class="mb-3">
+            {{ form.barbero.label(class="form-label") }}
+            {{ form.barbero(class="form-select") }}
         </div>
         
-        <div class="form-group">
-            <label for="fecha_hora">Fecha y Hora:</label>
-            <!-- Usamos el campo 'fecha_hora' del formulario FlaskForm -->
-            {{ form.fecha_hora(class="form-control", id="fecha_hora", type="datetime-local") }}  <!-- Campo para la fecha y hora -->
+        <div class="mb-3">
+            {{ form.servicio.label(class="form-label") }}
+            {{ form.servicio(class="form-select") }}
         </div>
         
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Agendar Cita</button>
+        <div class="mb-3">
+            {{ form.fecha_hora.label(class="form-label") }}
+            <div class="input-group datetimepicker">
+                {{ form.fecha_hora(class="form-control") }}
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+            </div>
         </div>
+        
+        <div class="mb-3">
+            {{ form.notas.label(class="form-label") }}
+            {{ form.notas(class="form-control", rows=3) }}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Agendar Cita</button>
     </form>
 </div>
+
+<!-- DateTimePicker -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+
+<script>
+    $(function () {
+        $('.datetimepicker').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm',
+            stepping: 15,
+            minDate: moment().startOf('day'),
+            daysOfWeekDisabled: [0],  // Deshabilitar domingos
+            minTime: '{{ horario_apertura.strftime("%H:%M") }}',
+            maxTime: '{{ horario_cierre.strftime("%H:%M") }}'
+        });
+        
+        // Validación de disponibilidad en tiempo real
+        $('#barbero, #servicio, #fecha_hora').change(function() {
+            // Aquí podrías añadir AJAX para verificar disponibilidad
+        });
+    });
+</script>
 {% endblock %}

@@ -30,35 +30,50 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+
+
 @auth_routes.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter(
-            (User.username == form.username.data) | 
-            (User.email == form.username.data)
-        ).first()
+        # Verificar si es login por teléfono
+        is_phone = form.is_phone_login.data == '1'
         
-        if user and user.check_password(form.password.data):
-            if user.activo:
+        if is_phone:
+            # Autenticación por teléfono (para clientes)
+            user = User.query.filter_by(phone=form.username.data).first()
+            if user:
                 login_user(user)
                 flash(f'Bienvenido {user.username}!', 'success')
-                
-             # Redirección basada en rol
-                if user.role == 'admin':
-                    return redirect(url_for('main_routes.admin_dashboard'))
-                elif user.role == 'barbero':
-                     return redirect(url_for('main_routes.mis_citas_barbero'))
-                else:
-                    return redirect(url_for('main_routes.mis_citas_cliente'))
+                return redirect(url_for('main_routes.mis_citas_cliente'))
             else:
-                flash('Tu cuenta está desactivada', 'warning')
+                flash('Teléfono no registrado. ¿Primera vez? Agenda una cita.', 'warning')
+                return redirect(url_for('main_routes.nueva_cita'))
         else:
-            flash('Usuario o contraseña incorrectos', 'danger')
+            # Autenticación normal por usuario/contraseña
+            user = User.query.filter(
+                (User.username == form.username.data) | 
+                (User.email == form.username.data)
+            ).first()
+            
+            if user and user.check_password(form.password.data):
+                if user.activo:
+                    login_user(user)
+                    flash(f'Bienvenido {user.username}!', 'success')
+                    
+                    # Redirección basada en rol
+                    if user.role == 'admin':
+                        return redirect(url_for('main_routes.admin_dashboard'))
+                    elif user.role == 'barbero':
+                        return redirect(url_for('main_routes.mis_citas_barbero'))
+                    else:
+                        return redirect(url_for('main_routes.mis_citas_cliente'))
+                else:
+                    flash('Tu cuenta está desactivada', 'warning')
+            else:
+                flash('Usuario o contraseña incorrectos', 'danger')
     
     return render_template('auth/login.html', form=form)
-
-
 
 
 
@@ -82,8 +97,6 @@ def register():
             db.session.rollback()
             flash('Error al registrar: ' + str(e), 'danger')
     return render_template('auth/register.html', form=form)
-
-
 
 
 

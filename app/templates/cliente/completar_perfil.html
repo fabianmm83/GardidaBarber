@@ -1,0 +1,61 @@
+{% extends "shared/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Completa tu perfil</h2>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Información de cuenta</h3>
+                </div>
+                <div class="panel-body">
+                    <form method="POST" action="{{ url_for('main_routes.completar_perfil') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="form-group">
+                            {{ form.email.label }}
+                            {{ form.email(class="form-control", placeholder="correo@ejemplo.com") }}
+                            {% for error in form.email.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.username.label }}
+                            {{ form.username(class="form-control", placeholder="Ej: juanperez") }}
+                            <small class="form-text text-muted">Si no lo indicas, se generará uno automáticamente</small>
+                            {% for error in form.username.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.password.label }}
+                            {{ form.password(class="form-control") }}
+                            {% for error in form.password.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.confirm_password.label }}
+                            {{ form.confirm_password(class="form-control") }}
+                            {% for error in form.confirm_password.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success btn-block">Completar mi perfil</button>
+                        </div>
+                        
+                        <div class="form-group text-center">
+                            <a href="{{ url_for('main_routes.mis_citas_cliente') }}" class="btn btn-link">Lo haré después</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

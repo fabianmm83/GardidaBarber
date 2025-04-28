@@ -1,106 +1,267 @@
 {% extends "shared/base.html" %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid mt-4">
     <h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Panel de Administración</h2>
     
-    <!-- Tarjetas de Resumen -->
+    <!-- Tarjetas de Resumen Mejoradas -->
     <div class="row">
-        <div class="col-md-4 mb-4">
+        <!-- Estadísticas de Clientes -->
+        <div class="col-md-3 mb-4">
             <div class="card text-white bg-primary h-100">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-users"></i> Clientes</h5>
-                    <h2 class="display-4">{{ total_clientes }}</h2>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title"><i class="fas fa-users"></i> Clientes</h6>
+                            <h2 class="display-4">{{ total_clientes }}</h2>
+                        </div>
+                        <span class="badge bg-light text-primary">Total</span>
+                    </div>
+                    <hr class="my-2">
+                    <small class="text-white">
+                        <i class="fas fa-user-plus"></i> {{ nuevos_clientes_mes }} nuevos este mes
+                    </small>
+                </div>
+                <div class="card-footer bg-transparent border-0">
                     <a href="{{ url_for('main_routes.gestion_usuarios') }}?rol=cliente" 
-                       class="text-white">Ver todos</a>
+                       class="text-white">Ver detalles <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-4 mb-4">
+        <!-- Estadísticas de Ventas -->
+        <div class="col-md-3 mb-4">
             <div class="card text-white bg-success h-100">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-cut"></i> Barberos</h5>
-                    <h2 class="display-4">{{ total_barberos }}</h2>
-                    <a href="{{ url_for('main_routes.gestion_usuarios') }}?rol=barbero" 
-                       class="text-white">Ver todos</a>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title"><i class="fas fa-cash-register"></i> Ventas Hoy</h6>
+                            <h2 class="display-4">${{ ventas_hoy|default('0.00') }}</h2>
+                        </div>
+                        <span class="badge bg-light text-success">Hoy</span>
+                    </div>
+                    <hr class="my-2">
+                    <small class="text-white">
+                        <i class="fas fa-chart-line"></i> {{ porcentaje_ventas }}% vs ayer
+                    </small>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('main_routes.registro_ventas') }}" 
+                       class="text-white">Ver ventas <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-4 mb-4">
+
+        <!-- Citas del Día -->
+        <div class="col-md-3 mb-4">
             <div class="card text-white bg-info h-100">
                 <div class="card-body">
-                    <h5 class="card-title"><i class="fas fa-calendar-day"></i> Citas Hoy</h5>
-                    <h2 class="display-4">{{ citas_hoy }}</h2>
-                    <a href="{{ url_for('main_routes.ver_citas_admin') }}" 
-                       class="text-white">Ver citas</a>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title"><i class="fas fa-calendar-day"></i> Citas Hoy</h6>
+                            <h2 class="display-4">{{ citas_hoy }}</h2>
+                        </div>
+                        <span class="badge bg-light text-info">Pendientes</span>
+                    </div>
+                    <hr class="my-2">
+                    <small class="text-white">
+                        <i class="fas fa-clock"></i> Próxima cita: {{ proxima_cita|default('No hay') }}
+                    </small>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('main_routes.citas_admin') }}" 
+                       class="text-white">Ver agenda <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventario -->
+        <div class="col-md-3 mb-4">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title"><i class="fas fa-box"></i> Inventario</h6>
+                            <h2 class="display-4">{{ total_productos }}</h2>
+                        </div>
+                        <span class="badge bg-light text-warning">Stock</span>
+                    </div>
+                    <hr class="my-2">
+                    <small class="text-white">
+                        <i class="fas fa-exclamation-triangle"></i> {{ productos_bajos_stock }} productos bajos en stock
+                    </small>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('main_routes.inventario') }}" 
+                       class="text-white">Ver inventario <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Sección de Acciones Rápidas -->
-    <div class="card mt-4">
-        <div class="card-header">
-            <h5><i class="fas fa-bolt"></i> Acciones Rápidas</h5>
+
+    <!-- Acciones Rápidas Mejoradas -->
+    <div class="card mt-4 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="fas fa-bolt"></i> Acciones Rápidas</h5>
         </div>
         <div class="card-body">
-            <div class="row">
-                <div class="col-md-3 mb-2">
+            <div class="row g-3">
+                <!-- Nueva Venta -->
+                <div class="col-md-2">
+                    <a href="{{ url_for('main_routes.registrar_venta') }}" 
+                       class="btn btn-primary btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-cash-register"></i>
+                        <span>Nueva Venta</span>
+                    </a>
+                </div>
+                
+                <!-- Nuevo Producto -->
+                <div class="col-md-2">
                     <a href="{{ url_for('main_routes.agregar_producto') }}" 
-                       class="btn btn-outline-primary btn-block">
-                        <i class="fas fa-plus"></i> Nuevo Producto
+                       class="btn btn-success btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Nuevo Producto</span>
                     </a>
                 </div>
-                <div class="col-md-3 mb-2">
+                
+                <!-- Nuevo Barbero -->
+                <div class="col-md-2">
                     <a href="{{ url_for('main_routes.registrar_barbero') }}" 
-                       class="btn btn-outline-success btn-block">
-                        <i class="fas fa-user-plus"></i> Nuevo Barbero
+                       class="btn btn-info btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Nuevo Barbero</span>
                     </a>
                 </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{{ url_for('main_routes.inventario') }}" 
-                       class="btn btn-outline-warning btn-block">
-                        <i class="fas fa-boxes"></i> Inventario
+                
+                <!-- Registrar Cita -->
+                <div class="col-md-2">
+                    <a href="{{ url_for('main_routes.nueva_cita_admin') }}" 
+                       class="btn btn-danger btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span>Registrar Cita</span>
                     </a>
                 </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{{ url_for('main_routes.ventas') }}" 
-                       class="btn btn-outline-info btn-block">
-                        <i class="fas fa-cash-register"></i> Ventas
+
+                <!-- Ver Reportes -->
+                <div class="col-md-2">
+                    <a href="{{ url_for('main_routes.ver_reportes') }}" 
+                       class="btn btn-warning btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Ver Reportes</span>
                     </a>
                 </div>
-                <div class="col-md-3 mb-2">
-                    <a href="{{ url_for('main_routes.registro_ventas') }}" 
-                       class="btn btn-outline-secondary btn-block">
-                        <i class="fas fa-list-alt"></i> Registro de Ventas
+                
+                <!-- Ver Citas -->
+                <div class="col-md-2">
+                    <a href="{{ url_for('main_routes.citas_admin') }}" 
+                       class="btn btn-secondary btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Ver Citas</span>
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Últimas Ventas -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Últimas Ventas</h5>
+                    <a href="{{ url_for('main_routes.registro_ventas') }}" class="btn btn-sm btn-outline-primary">
+                        Ver todas
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for venta in ultimas_ventas %}
+                            <tr>
+                                <td>#{{ venta.id }}</td>
+                                <td>{{ venta.cliente.username if venta.cliente else 'Cliente General' }}</td>
+                                <td>${{ "%.2f"|format(venta.total) }}</td>
+                                <td>{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>
+                                    <span class="badge bg-success">Completada</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximas Citas -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar"></i> Próximas Citas</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for cita in proximas_citas %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ cita.cliente.username if cita.cliente else 'Cliente General' }}</h6>
+                            <small>{{ cita.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</small>
+                        </div>
+                        <!-- Cambiar esta línea -->
+                        <p class="mb-1">Barbero: {{ User.query.get(cita.barbero_id).username if User.query.get(cita.barbero_id) else 'No asignado' }}</p>
+                        <small>Servicio: {{ cita.servicio.nombre }}</small>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Incluye Font Awesome para iconos -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
 <style>
-    .card {
-        border-radius: 10px;
-        transition: transform 0.3s;
+    .btn-lg {
+        padding: 1rem;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
     }
+    
+    .btn-lg:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
     .card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
+    
     .display-4 {
         font-size: 2.5rem;
+        font-weight: 600;
     }
-    .btn-block {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+    }
+    
+    .badge {
+        padding: 0.5em 0.75em;
     }
 </style>
 {% endblock %}

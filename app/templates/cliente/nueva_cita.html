@@ -1,0 +1,52 @@
+{% extends "shared/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Agenda tu primera cita</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Ingresa tus datos</h3>
+                </div>
+                <div class="panel-body">
+                    <form method="POST" action="{{ url_for('main_routes.nueva_cita') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="form-group">
+                            {{ form.nombre.label }}
+                            {{ form.nombre(class="form-control", placeholder="Nombre completo") }}
+                            {% for error in form.nombre.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.phone.label }}
+                            {{ form.phone(class="form-control", placeholder="Ej: +5212345678") }}
+                            <small class="form-text text-muted">Con este teléfono podrás acceder después</small>
+                            {% for error in form.phone.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.submit(class="btn btn-primary btn-block") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">¿Ya tienes cuenta?</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Si ya tienes una cuenta, puedes iniciar sesión.</p>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-default">Iniciar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,1 +1,0 @@
-// Puedes agregar scripts personalizados aquí si es necesario

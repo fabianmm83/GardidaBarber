@@ -1,88 +1,94 @@
-/* Fondo con imagen y opacidad */
+/* Estilos base limpios */
 body {
-    background: url('/static/gardida_logo.png') no-repeat center center fixed;
-    background-size: cover;
-    color: #fff; /* Asegúrate de que el texto sea blanco o un color que contraste */
+    background-color: #f8f9fa;
+    color: #343a40;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Estilo para el jumbotron, puede ser la sección donde se muestra el texto */
+/* Estilo para el jumbotron */
 .jumbotron {
-    background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro con opacidad */
+    background-color: #e9ecef;
     padding: 3rem;
-    color: white; /* Asegura que el texto sea blanco */
+    color: #212529;
     text-align: center;
     border-radius: 0.3rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 }
 
 /* Logo de la barra de navegación */
 .navbar-brand img.navbar-logo {
-    border-radius: 50%; /* Hace el logo circular */
-    width: 70px; /* Tamaño más grande para el logo */
-    height: 70px; /* Mantén la relación para que sea circular */
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
 }
 
 /* Barra de navegación */
 .navbar {
-    background-color: #333; /* Fondo más oscuro para la barra */
+    background-color: #343a40 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .navbar-dark .navbar-nav .nav-link {
-    color: #fff !important; /* Asegura que las letras de los enlaces sean blancas */
+    color: rgba(255, 255, 255, 0.85) !important;
 }
 
 .navbar-dark .navbar-nav .nav-link:hover {
-    color: #ddd !important; /* Color de hover para los enlaces */
+    color: #fff !important;
 }
 
-/* Ajustes para mejorar la visibilidad de la tabla */
+/* Estilos para tablas */
 .table {
-    background-color: rgba(255, 255, 255, 0.1); /* Fondo semi-transparente */
-    color: white !important; /* Forzar color blanco en toda la tabla */
+    background-color: #fff;
+    color: #212529 !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
 }
 
 .table th, .table td {
-    border-color: rgba(255, 255, 255, 0.3); /* Bordes más visibles */
-    color: white !important; /* Asegurar que el texto no se quede negro */
-    text-align: center; /* Centra el texto en las celdas */
+    border-color: #dee2e6;
+    color: #212529 !important;
+    text-align: center;
+    vertical-align: middle;
 }
 
-/* Resaltar filas al pasar el mouse */
 .table-hover tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.2); /* Un poco más claro al hacer hover */
+    background-color: rgba(0, 0, 0, 0.03);
 }
 
-/* Ajuste del contenedor para mejorar la visibilidad */
+/* Contenedor principal */
 .container {
-    background: rgba(0, 0, 0, 0.7); /* Fondo oscuro semi-transparente */
+    background: transparent;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
-/* Mejorar contraste de los botones */
+/* Botones */
 .btn {
     border-radius: 5px;
     font-weight: bold;
+    transition: all 0.2s;
 }
 
 .btn-primary {
     background-color: #007bff;
     border-color: #007bff;
-    color: white !important;
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+    background-color: #0069d9;
+    border-color: #0062cc;
 }
 
 .btn-info {
     background-color: #17a2b8;
     border-color: #17a2b8;
-    color: white !important;
 }
 
 .btn-info:hover {
-    background-color: #117a8b;
+    background-color: #138496;
     border-color: #117a8b;
+}
+
+/* Alertas */
+.alert {
+    border-radius: 4px;
 }

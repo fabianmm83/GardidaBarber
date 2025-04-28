@@ -1,12 +1,30 @@
-{% extends "shared/base.html" %}  <!-- Cambiado a ruta completa -->
+{% extends "shared/base.html" %}
 {% block content %}
 <div class="jumbotron">
     <h1 class="display-4">Bienvenido a la Barbería Gardida</h1>
     <p class="lead">Agenda tu cita con los mejores barberos de la ciudad.</p>
     <hr class="my-4">
-    <p>Regístrate o inicia sesión para comenzar.</p>
-    <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}" role="button">Registrarse</a>
-    <a class="btn btn-success btn-lg" href="{{ url_for('auth.login') }}" role="button">Iniciar Sesión</a>
- 
+    
+    <!-- Nuevo llamado a la acción principal -->
+    <div class="row mb-4">
+        <div class="col-md-12 text-center">
+            <h3>¿Primera vez en nuestra barbería?</h3>
+            <a class="btn btn-success btn-lg mt-2" href="{{ url_for('main_routes.nueva_cita') }}" role="button">
+                <i class="fa fa-calendar"></i> ¡Agenda tu primera cita ahora!
+            </a>
+            <p class="mt-2 text-muted">Solo necesitas nombre y teléfono. ¡En menos de 1 minuto!</p>
+        </div>
+    </div>
+    
+    <hr class="my-4">
+    
+    <!-- Opciones tradicionales -->
+    <div class="row">
+        <div class="col-md-12">
+            <p>¿Ya tienes cuenta? Accede directamente:</p>
+            <a class="btn btn-primary" href="{{ url_for('auth.login') }}" role="button">Iniciar Sesión</a>
+            <a class="btn btn-outline-secondary" href="{{ url_for('auth.register') }}" role="button">Registro completo</a>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -3,34 +3,47 @@
 <div class="container mt-4">
     <div class="card shadow-lg border-0" style="background-color: rgba(0, 0, 0, 0.7);">
         <div class="card-header" style="background-color: rgba(0, 0, 0, 0.8);">
-            <h4 class="text-white"><i class="fas fa-file-invoice-dollar mr-2"></i>Registro Histórico de Ventas</h4>
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="text-white"><i class="fas fa-file-invoice-dollar mr-2"></i>Registro Histórico de Ventas</h4>
+                <a href="{{ url_for('main_routes.registrar_venta') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Nueva Venta
+                </a>
+            </div>
         </div>
         <div class="card-body" style="background-color: rgba(0, 0, 0, 0.6);">
             <div class="table-responsive">
                 <table class="table table-borderless table-hover">
                     <thead>
-                        <tr > <!-- Fondo casi blanco con 90% opacidad -->
+                        <tr >
                             <th class="text-dark font-weight-bold">Fecha</th>
-                            <th class="text-dark font-weight-bold">Producto</th>
-                            <th class="text-dark font-weight-bold">Cantidad</th>
-                            <th class="text-dark font-weight-bold">Precio Unitario</th>
-                            <th class="text-dark font-weight-bold">Total</th>
                             <th class="text-dark font-weight-bold">Vendedor</th>
+                            <th class="text-dark font-weight-bold">Cliente</th>
+                            <th class="text-dark font-weight-bold">Método</th>
+                            <th class="text-dark font-weight-bold">Subtotal</th>
+                            <th class="text-dark font-weight-bold">IVA</th>
+                            <th class="text-dark font-weight-bold">Total</th>
+                            <th class="text-dark font-weight-bold">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for venta in ventas.items %}
                         <tr style="background-color: rgba(255, 255, 255, 0.1);" class="text-white">
-                            <td>{{ venta.fecha_venta.strftime('%d/%m/%Y %H:%M') }}</td>
-                            <td>{{ venta.producto.nombre }}</td>
-                            <td>{{ venta.cantidad }}</td>
-                            <td>${{ venta.precio_unitario }}</td>
+                            <td>{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ venta.seller.username }}</td>
+                            <td>{{ venta.cliente.username if venta.cliente else 'Sin cliente' }}</td>
+                            <td>{{ venta.metodo_pago }}</td>
+                            <td>${{ venta.subtotal }}</td>
+                            <td>${{ venta.iva }}</td>
                             <td>${{ venta.total }}</td>
-                            <td>{{ venta.cliente.username }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Ver
+                                </a>
+                            </td>
                         </tr>
                         {% else %}
                         <tr style="background-color: rgba(255, 255, 255, 0.1);" class="text-white">
-                            <td colspan="6" class="text-center">No hay ventas registradas</td>
+                            <td colspan="8" class="text-center">No hay ventas registradas</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -74,5 +87,4 @@
         </div>
     </div>
 </div>
-
 {% endblock %}

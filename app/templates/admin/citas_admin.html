@@ -1,0 +1,148 @@
+{% extends "shared/base.html" %}
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Registro de Citas Yoshi</h2>
+        <a href="{{ url_for('main_routes.nueva_cita_admin') }}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Nueva Cita
+        </a>
+    </div>
+
+    <!-- Listado de Citas -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Últimas Citas</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Cliente</th>
+                            <th>Servicio</th>
+                            <th>Barbero</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if citas.items %}
+                            {% for cita in citas.items %}
+                            <tr>
+                                <td>{{ cita.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>
+                                    {% if cita.cliente %}
+                                        {{ cita.cliente.username }}
+                                    {% elif cita.cliente_id %}
+                                        Cliente ID: {{ cita.cliente_id }}
+                                    {% else %}
+                                        Cliente general
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if cita.servicio %}
+                                        {{ cita.servicio.nombre }}
+                                    {% else %}
+                                        {{ cita.servicio_id }} (ID)
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if cita.barbero %}
+                                        {% if cita.barbero.user %}
+                                            {{ cita.barbero.user.username }}
+                                        {% elif cita.barbero.nombre %}
+                                            {{ cita.barbero.nombre }}
+                                        {% else %}
+                                            {{ cita.barbero_id }} (Sin nombre)
+                                        {% endif %}
+                                    {% elif cita.barbero_id %}
+                                        {% set barbero_user = User.query.get(cita.barbero_id) %}
+                                        {% if barbero_user %}
+                                            {{ barbero_user.username }}
+                                        {% else %}
+                                            Barbero ID: {{ cita.barbero_id }}
+                                        {% endif %}
+                                    {% else %}
+                                        No asignado
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if cita.estado == 'confirmada' %} bg-success 
+                                        {% elif cita.estado == 'cancelada' %} bg-danger 
+                                        {% else %} bg-warning text-dark 
+                                        {% endif %}">
+                                        {{ cita.estado.capitalize() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('main_routes.editar_cita_admin', id=cita.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('main_routes.eliminar_cita_admin', id=cita.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta cita?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No hay citas registradas.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            <nav aria-label="Navegación de páginas">
+                <ul class="pagination justify-content-center mt-3">
+                    {% if citas.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main_routes.citas_admin', page=citas.prev_num) }}" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo; Anterior</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo; Anterior</span>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Página {{ citas.page }} de {{ citas.pages }}</span>
+                    </li>
+
+                    {% if citas.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main_routes.citas_admin', page=citas.next_num) }}" aria-label="Siguiente">
+                            <span aria-hidden="true">Siguiente &raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Siguiente &raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Script para confirmación de eliminación -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar confirmación a todos los botones de eliminar
+    const deleteButtons = document.querySelectorAll('.btn-danger');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (!confirm('¿Estás seguro de eliminar esta cita?')) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
