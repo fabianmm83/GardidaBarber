@@ -5,7 +5,7 @@ from wtforms import DateTimeField
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SubmitField, FloatField, HiddenField
 from wtforms.validators import DataRequired, Email, DataRequired, Email, Length, Regexp
-from wtforms.validators import DataRequired, EqualTo, Optional
+from wtforms.validators import DataRequired, EqualTo, Optional, ValidationError
 from wtforms import IntegerField, DecimalField
 
 
@@ -84,13 +84,22 @@ class CompletarPerfilForm(FlaskForm):
     ])
     submit = SubmitField('Completar Perfil')
 
-
 class CitaForm(FlaskForm):
-    barbero_id = SelectField('Barbero', coerce=int, validators=[DataRequired()])
-    servicio_id = SelectField('Servicio', coerce=int, validators=[DataRequired()])
-    fecha = DateTimeField('Fecha y Hora', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
-    notas = TextAreaField('Notas Adicionales')
-    submit = SubmitField('Agendar Cita')
+    barbero = SelectField('Barbero', coerce=int, validators=[Optional()])
+    cliente_id = SelectField('Cliente', coerce=int, validators=[Optional()])
+    servicio = SelectField('Servicio', coerce=int, validators=[Optional()])
+    fecha_hora = DateTimeField('Fecha y Hora', 
+                            format='%Y-%m-%dT%H:%M',  # Formato HTML5 datetime-local
+                            validators=[Optional()],
+                            render_kw={"type": "datetime-local"})
+    notas = TextAreaField('Notas Adicionales', validators=[Optional()])
+    estado = SelectField('Estado', choices=[
+        ('pendiente', 'Pendiente'),
+        ('confirmada', 'Confirmada'),
+        ('cancelada', 'Cancelada'),
+        ('completada', 'Completada')
+    ], validators=[Optional()])
+    submit = SubmitField('Guardar Cambios')
 
 class ProductoForm(FlaskForm):
     nombre = StringField('Nombre del Producto', validators=[DataRequired()])
@@ -113,18 +122,36 @@ class ProductoForm(FlaskForm):
     
     submit = SubmitField('Guardar Producto')
 
-
 class SaleForm(FlaskForm):
-    cliente_id = SelectField('Cliente (Opcional)', coerce=int)
+    cliente_id = SelectField('Cliente (Opcional)', coerce=int, validators=[Optional()])
     metodo_pago = SelectField('Método de Pago', choices=[
         ('efectivo', 'Efectivo'),
         ('tarjeta', 'Tarjeta de Crédito/Débito'),
         ('transferencia', 'Transferencia'),
         ('qr', 'Pago con QR')
     ], validators=[DataRequired(message="Seleccione un método de pago")])
+    descuento = FloatField('Descuento', 
+                          default=0.0,
+                          validators=[Optional()],
+                          render_kw={"min": "0", "step": "0.01"})
+    estado = SelectField('Estado', choices=[
+        ('completada', 'Completada'),
+        ('pendiente', 'Pendiente'),
+        ('cancelada', 'Cancelada')
+    ], default='completada')
     productos_json = HiddenField('Productos')
+    origen = HiddenField('Origen', default='presencial')
+    subtotal = HiddenField('Subtotal')
+    iva = HiddenField('IVA')
+    total = HiddenField('Total')
     submit = SubmitField('Finalizar Venta')
 
+    def validate_descuento(form, field):
+        try:
+            if field.data < 0:
+                raise ValidationError('El descuento no puede ser negativo')
+        except (TypeError, ValueError):
+            raise ValidationError('Ingrese un valor numérico válido')
 
 class AgendarCitaForm(FlaskForm):
     barbero = SelectField('Barbero', coerce=int, validators=[DataRequired()])

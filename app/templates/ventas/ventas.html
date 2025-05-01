@@ -86,9 +86,16 @@
                             <td>{{ venta.metodo_pago|title }}</td>
                             <td>${{ "%.2f"|format(venta.total) }}</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detalleVenta{{ venta.id }}">
-                                    <i class="fas fa-eye"></i>
-                                </a>
+                                <div class="btn-group" role="group">
+                                    <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detalleVenta{{ venta.id }}" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+        onclick="confirmarEliminarVenta('{{ venta.id }}')" 
+        title="Eliminar venta">
+    <i class="fas fa-trash"></i>
+</button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -115,4 +122,86 @@
         </div>
     </div>
 </div>
+
+<!-- Modales de detalle de venta -->
+{% for venta in ventas.items %}
+<div class="modal fade" id="detalleVenta{{ venta.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de Venta #{{ venta.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in venta.detalles %}
+                            <tr>
+                                <td>{{ detalle.producto.nombre }}</td>
+                                <td>{{ detalle.cantidad }}</td>
+                                <td>${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                                <td>${{ "%.2f"|format(detalle.subtotal) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                <td>${{ "%.2f"|format(venta.subtotal) }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>IVA:</strong></td>
+                                <td>${{ "%.2f"|format(venta.iva) }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                <td>${{ "%.2f"|format(venta.total) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal de confirmación para eliminar venta -->
+<div class="modal fade" id="confirmarEliminarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar esta venta? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formEliminarVenta" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminarVenta(ventaId) {
+    const modal = new bootstrap.Modal(document.getElementById('confirmarEliminarModal'));
+    const form = document.getElementById('formEliminarVenta');
+    form.action = `/ventas/eliminar/${ventaId}`;
+    modal.show();
+}
+</script>
 {% endblock %}

@@ -35,10 +35,7 @@ class User(UserMixin, db.Model):
                                             back_populates='administrador',
                                             lazy='dynamic')
     
-    ventas_como_cliente = db.relationship('Venta', 
-                                       foreign_keys='Venta.cliente_id', 
-                                       back_populates='cliente',
-                                       lazy='dynamic')
+   
     
     # Relaciones de perfil
     admin_profile = db.relationship('Admin', 
@@ -145,6 +142,8 @@ class Cita(db.Model):
     def __repr__(self):
         return f"<Cita {self.id} - {self.fecha_hora.strftime('%d/%m/%Y %H:%M')} - {self.estado}>"
 
+
+
 class Producto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
@@ -155,10 +154,11 @@ class Producto(db.Model):
     categoria = db.Column(db.String(50))
     imagen = db.Column(db.String(200))
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)  # Add this line
 
-
-    # Relación con ventas
-    ventas = db.relationship('Venta', back_populates='producto', lazy=True)
+    ventas = db.relationship('SaleDetail', 
+                           back_populates='producto',
+                           lazy=True)
 
     def __repr__(self):
         return f"<Producto {self.nombre} - ${self.precio}>"
@@ -166,9 +166,11 @@ class Producto(db.Model):
     def reducir_stock(self, cantidad_vendida):
         if self.cantidad >= cantidad_vendida:
             self.cantidad -= cantidad_vendida
+            self.fecha_actualizacion = datetime.utcnow()  # Update timestamp
             db.session.commit()
         else:
             raise ValueError("Stock insuficiente")
+
 
 class Servicio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -179,80 +181,58 @@ class Servicio(db.Model):
     activo = db.Column(db.Boolean, default=True, nullable=False)  # Campo nuevo
     citas = db.relationship('Cita', back_populates='servicio')
      
+     
+     
 class Sale(db.Model):
+    __tablename__ = 'sales'
     id = db.Column(db.Integer, primary_key=True)
-    fecha = db.Column(db.DateTime, default=datetime.utcnow)
-    total = db.Column(db.Float, nullable=False)
-    subtotal = db.Column(db.Float, nullable=False)
-    iva = db.Column(db.Float, nullable=False, default=0)
-    
-    # Metadatos y relaciones
+    fecha = db.Column(db.DateTime, nullable=False, default=datetime.now)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    seller = db.relationship('User', backref='ventas_realizadas', foreign_keys=[seller_id])
-    
     cliente_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    cliente = db.relationship('User', backref='compras', foreign_keys=[cliente_id])
-    
     metodo_pago = db.Column(db.String(50), nullable=False)
-    origen = db.Column(db.String(20), default='presencial')  # 'presencial' o 'web'
+    subtotal = db.Column(db.Float, nullable=False)
+    iva = db.Column(db.Float, nullable=False)
+    total = db.Column(db.Float, nullable=False)
+    descuento = db.Column(db.Float, default=0)
+    estado = db.Column(db.String(20), default='completada')
+    origen = db.Column(db.String(20), default='presencial')
     
-    # Relación con detalles
-    detalles = db.relationship('SaleDetail', back_populates='venta', cascade='all, delete-orphan')
+    # Relaciones
+    seller = db.relationship('User', foreign_keys=[seller_id])
+    cliente = db.relationship('User', foreign_keys=[cliente_id])
+    detalles = db.relationship('SaleDetail', back_populates='venta', lazy=True)
     
     def __repr__(self):
-        return f"<Venta {self.id} - ${self.total}>"
+        return f"<Sale {self.id} - ${self.total}>"
 
-
+    @property
+    def fecha_formateada(self):
+        return self.fecha.strftime('%d/%m/%Y %H:%M')
+    
+    def calcular_totales(self):
+        self.subtotal = sum(detalle.subtotal for detalle in self.detalles)
+        self.iva = self.subtotal * 0.16
+        self.total = self.subtotal + self.iva - self.descuento
 
 class SaleDetail(db.Model):
+    __tablename__ = 'sale_details'
     id = db.Column(db.Integer, primary_key=True)
-    
-    # Relación con venta principal
-    venta_id = db.Column(db.Integer, db.ForeignKey('sale.id'), nullable=False)
-    venta = db.relationship('Sale', back_populates='detalles')
-    
-    # Relación con producto
+    venta_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=False)
     producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
-    producto = db.relationship('Producto')
-    
     cantidad = db.Column(db.Integer, nullable=False)
     precio_unitario = db.Column(db.Float, nullable=False)
     subtotal = db.Column(db.Float, nullable=False)
+    descuento_item = db.Column(db.Float, default=0)
     
-    def __repr__(self):
-        return f"<DetalleVenta {self.id} - {self.cantidad} x {self.precio_unitario}>"
-
-
-
-
-class Venta(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cliente_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), nullable=False)
-    cantidad = db.Column(db.Integer, nullable=False, default=1)
-    precio_unitario = db.Column(db.Float, nullable=False)
-    total = db.Column(db.Float, nullable=False)
-    fecha_venta = db.Column(db.DateTime, default=datetime.utcnow)
-    metodo_pago = db.Column(db.String(50))
-
     # Relaciones
+    venta = db.relationship('Sale', back_populates='detalles')
     producto = db.relationship('Producto', back_populates='ventas')
-    cliente = db.relationship('User', back_populates='ventas_como_cliente')
 
     def __repr__(self):
-        return f"<Venta {self.id} - {self.producto.nombre} x{self.cantidad}>"
+        return f"<SaleDetail {self.id} - {self.cantidad} x {self.precio_unitario}>"
 
-    def registrar_venta(self):
-        try:
-            self.producto.reducir_stock(self.cantidad)
-            self.precio_unitario = self.producto.precio
-            self.total = self.precio_unitario * self.cantidad
-            db.session.add(self)
-            db.session.commit()
-            return True
-        except ValueError as e:
-            db.session.rollback()
-            raise e
+    def calcular_subtotal(self):
+        self.subtotal = self.cantidad * self.precio_unitario - self.descuento_item
 
 
 class EditarUsuarioForm(FlaskForm):

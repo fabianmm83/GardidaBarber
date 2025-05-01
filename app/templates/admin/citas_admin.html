@@ -1,4 +1,24 @@
 {% extends "shared/base.html" %}
+
+<style>
+    .btn-sm {
+        margin: 0 2px;
+        width: 35px;  /* Tamaño fijo para botones con solo icono */
+        height: 35px; /* Tamaño fijo para botones con solo icono */
+        padding: 6px;
+        border-radius: 4px;
+    }
+    .btn-sm:not(:first-child) {
+        padding: 8px;  /* Ajuste específico para iconos */
+    }
+    .btn-success {
+        min-width: 100px !important; /* Mantener el botón completar más ancho */
+    }
+    td.text-center form {
+        display: inline-block;
+    }
+</style>
+
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -76,12 +96,23 @@
                                         {{ cita.estado.capitalize() }}
                                     </span>
                                 </td>
-                                <td>
-                                    <a href="{{ url_for('main_routes.editar_cita_admin', id=cita.id) }}" class="btn btn-sm btn-primary">
+                                <td class="text-center">
+                                    <!-- Botón Marcar como Completada -->
+                                    <form action="{{ url_for('main_routes.cambiar_estado_cita', id=cita.id) }}" method="POST" style="display:inline;">
+                                        <input type="hidden" name="estado" value="completada">
+                                        <button type="submit" class="btn btn-sm btn-success" {% if cita.estado == 'completada' %}disabled{% endif %}>
+                                            <i class="fas fa-check"></i> Completar
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Botón Editar (solo icono) -->
+                                    <a href="{{ url_for('main_routes.editar_cita_admin', id=cita.id) }}" class="btn btn-sm btn-primary" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="{{ url_for('main_routes.eliminar_cita_admin', id=cita.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta cita?')">
-                                        <i class="fas fa-trash-alt"></i>
+                                    
+                                    <!-- Botón Eliminar (solo icono) -->
+                                    <a href="{{ url_for('main_routes.eliminar_cita_admin', id=cita.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta cita?')" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
                                     </a>
                                 </td>
                             </tr>

@@ -6,108 +6,161 @@
 
     <!-- Filtros -->
     <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Filtros</h5>
+        </div>
         <div class="card-body">
-            <form class="row g-3">
+            <form id="filtroForm" class="row">
                 <div class="col-md-3">
-                    <label class="form-label">Rango de Fechas</label>
-                    <select class="form-select" id="dateRange">
-                        <option value="today">Hoy</option>
-                        <option value="week">Esta Semana</option>
-                        <option value="month">Este Mes</option>
-                        <option value="custom">Personalizado</option>
-                    </select>
+                    <label>Fecha Inicio:</label>
+                    <input type="date" class="form-control" name="fecha_inicio" value="{{ fecha_inicio }}">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Categoría</label>
-                    <select class="form-select" id="category">
-                        <option value="all">Todas</option>
-                        <option value="ventas">Ventas</option>
-                        <option value="citas">Citas</option>
-                        <option value="productos">Productos</option>
+                    <label>Fecha Fin:</label>
+                    <input type="date" class="form-control" name="fecha_fin" value="{{ fecha_fin }}">
+                </div>
+                <div class="col-md-3">
+                    <label>Barbero:</label>
+                    <select class="form-control" name="barbero_id">
+                        <option value="">Todos</option>
+                        {% for barbero in barberos %}
+                        <option value="{{ barbero.id }}">{{ barbero.username }}</option>
+                        {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-2 align-self-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter"></i> Filtrar
-                    </button>
+                <div class="col-md-2">
+                    <label>Tipo:</label>
+                    <select class="form-control" name="tipo">
+                        <option value="">Todos</option>
+                        <option value="servicio">Servicios</option>
+                        <option value="producto">Productos</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary btn-block">Filtrar</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Resumen Financiero -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Resumen Financiero</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-success">${{ "%.2f"|format(ingresos_totales) }}</h3>
+                                <p class="text-muted">Ingresos Totales</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-danger">${{ "%.2f"|format(gastos_totales) }}</h3>
+                                <p class="text-muted">Gastos Totales</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">${{ "%.2f"|format(total_ventas) }}</h3>
+                                <p class="text-muted">Ventas del Período</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-info">${{ "%.2f"|format(ingresos_citas) }}</h3>
+                                <p class="text-muted">Ingresos por Citas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas de Barberos -->
     <div class="row">
-        <!-- Resumen de Ventas -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-cash-register"></i> Reporte de Ventas</h5>
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-user-tie"></i> Estadísticas por Barbero</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="salesChart"></canvas>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Barbero</th>
+                                    <th class="text-center">Total Citas</th>
+                                    <th class="text-center">Completadas</th>
+                                    <th class="text-center">Pendientes</th>
+                                    <th class="text-center">% Completación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for barbero, total, completadas, pendientes in estadisticas_barberos %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-user-circle mr-2"></i>
+                                        {{ barbero.username }}
+                                        {% if barbero.role == 'admin' %}
+                                            <span class="badge badge-info">Admin</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">{{ total }}</td>
+                                    <td class="text-center text-success">{{ completadas }}</td>
+                                    <td class="text-center text-warning">{{ pendientes }}</td>
+                                    <td class="text-center">
+                                        {% if total > 0 %}
+                                            {{ "%.1f"|format((completadas/total * 100)) }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Servicios Más Populares -->
+    <!-- Top Rendimiento -->
+    <div class="row">
         <div class="col-md-6 mb-4">
             <div class="card h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-cut"></i> Servicios Más Solicitados</h5>
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-trophy"></i> Top Rendimiento</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="servicesChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Métricas de Inventario -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-box"></i> Estado del Inventario</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="inventoryChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rendimiento de Barberos -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-user-tie"></i> Rendimiento de Barberos</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="barbersChart"></canvas>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-center mb-3">
+                                <h4>Producto Más Vendido</h4>
+                                <p class="h5">{{ producto_mas_vendido[0] if producto_mas_vendido else 'N/A' }}</p>
+                                <small class="text-muted">{{ producto_mas_vendido[1] if producto_mas_vendido else 0 }} unidades</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <h4>Barbero con Más Citas</h4>
+                                <p class="h5">{{ barbero_mas_citas[0] if barbero_mas_citas else 'N/A' }}</p>
+                                <small class="text-muted">{{ barbero_mas_citas[1] if barbero_mas_citas else 0 }} citas</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Script para Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Aquí irá la lógica de las gráficas
-    document.addEventListener('DOMContentLoaded', function() {
-        // Configuración de gráficas (se completará con datos dinámicos)
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
-                datasets: [{
-                    label: 'Ventas Diarias',
-                    data: [12, 19, 3, 5, 2, 3, 7],
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                }]
-            }
-        });
-        // ... más configuraciones de gráficas
-    });
-</script>
 
 <style>
     .card {
@@ -117,8 +170,29 @@
     .card-header {
         border-bottom: 1px solid rgba(0,0,0,0.1);
     }
-    canvas {
-        max-height: 300px;
+    h3 {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .text-muted {
+        font-size: 0.9rem;
     }
 </style>
+
+<script>
+document.getElementById('filtroForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const params = new URLSearchParams();
+    
+    for (let pair of formData.entries()) {
+        if (pair[1]) {  // Solo agregar si tiene valor
+            params.append(pair[0], pair[1]);
+        }
+    }
+    
+    window.location.href = '/reportes?' + params.toString();
+});
+</script>
 {% endblock %}

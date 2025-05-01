@@ -1,0 +1,96 @@
+{% extends "shared/base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h3 class="card-title">Editar Cita</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.fecha_hora.label(class="form-label") }}
+                            {{ form.fecha_hora(class="form-control") }}
+                            {% if form.fecha_hora.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.fecha_hora.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.barbero.label(class="form-label") }}
+                            {{ form.barbero(class="form-select") }}
+                            {% if form.barbero.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.barbero.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.cliente_id.label(class="form-label") }}
+                            {{ form.cliente_id(class="form-select") }}
+                            {% if form.cliente_id.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.cliente_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.servicio.label(class="form-label") }}
+                            {{ form.servicio(class="form-select") }}
+                            {% if form.servicio.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.servicio.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.estado.label(class="form-label") }}
+                            {{ form.estado(class="form-select") }}
+                            {% if form.estado.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.estado.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.notas.label(class="form-label") }}
+                            {{ form.notas(class="form-control") }}
+                            {% if form.notas.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.notas.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('main_routes.citas_admin') }}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

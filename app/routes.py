@@ -1,7 +1,8 @@
+from unittest import case
 from flask import app, render_template, redirect, Blueprint, url_for, flash, request, abort
 from flask_login import login_required, current_user, login_user
 from app import db
-from app.models import Sale, SaleDetail, Servicio, User, Cita, Producto, Venta, Barbero, EditarUsuarioForm
+from app.models import Sale, SaleDetail, Servicio, User, Cita, Producto, Barbero, EditarUsuarioForm
 from app.forms import CitaForm, ProductoForm, AgendarCitaForm, BarberoForm, NuevaCitaForm, CompletarPerfilForm, SaleForm
 from datetime import datetime, time, timedelta
 from functools import wraps
@@ -67,9 +68,6 @@ def verificar_disponibilidad(barbero_id, fecha_hora):
 @main_routes.route('/')
 def home():
     return render_template('shared/index.html')
-
-
-
 
 
 
@@ -262,67 +260,53 @@ def citas_admin():
                          estado_filtro=estado,
                          modo='listar')
 
-
-
-
-
-
-
 @main_routes.route('/admin/citas/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def editar_cita_admin(id):
     cita = Cita.query.get_or_404(id)
-    form = AgendarCitaForm(obj=cita)
+    form = CitaForm(obj=cita)
     
-    # Configurar datos del formulario
+    # Cargar opciones para los select fields
     barberos = User.query.filter((User.role == 'barbero') | (User.role == 'admin')).all()
-    servicios = Servicio.query.filter_by(activo=True).all()
-    clientes = User.query.filter_by(role='cliente').all()
+    form.barbero.choices = [(b.id, b.username) for b in barberos]
     
-    form.barbero.choices = [(barbero.id, barbero.username) for barbero in barberos]
-    form.servicio.choices = [(servicio.id, servicio.nombre) for servicio in servicios]
-    form.cliente_id.choices = [(0, 'Cliente general')] + [(cliente.id, cliente.username) for cliente in clientes]
+    clientes = User.query.filter_by(role='cliente').all()
+    form.cliente_id.choices = [(0, 'Cliente General')] + [(c.id, c.username) for c in clientes]
+    
+    servicios = Servicio.query.filter_by(activo=True).all()
+    form.servicio.choices = [(s.id, s.nombre) for s in servicios]
     
     if form.validate_on_submit():
         try:
-            fecha_hora = datetime.strptime(str(form.fecha_hora.data), '%Y-%m-%d %H:%M:%S')
-            
-            # Verificar disponibilidad (excluyendo la cita actual)
-            cita_existente = Cita.query.filter(
-                Cita.barbero_id == form.barbero.data,
-                Cita.fecha_hora == fecha_hora,
-                Cita.id != id
-            ).first()
-            
-            if cita_existente:
-                flash('El barbero ya tiene una cita en ese horario', 'danger')
-                return redirect(url_for('main_routes.editar_cita_admin', id=id))
-            
-            # Actualizar cita
-            cita.barbero_id = form.barbero.data
-            cita.cliente_id = form.cliente_id.data if form.cliente_id.data != 0 else None
-            cita.servicio = Servicio.query.get(form.servicio.data).nombre
-            cita.fecha_hora = fecha_hora
-            cita.notas = form.notas.data
+            # Solo actualizar los campos que han sido modificados
+            if form.barbero.data:
+                cita.barbero_id = form.barbero.data
+            if form.cliente_id.data is not None:
+                cita.cliente_id = form.cliente_id.data if form.cliente_id.data != 0 else None
+            if form.servicio.data:
+                cita.servicio_id = form.servicio.data
+            if form.fecha_hora.data:
+                cita.fecha_hora = form.fecha_hora.data
+            if form.notas.data:
+                cita.notas = form.notas.data
+            if form.estado.data:
+                cita.estado = form.estado.data
             
             db.session.commit()
             flash('Cita actualizada correctamente', 'success')
-            return redirect(url_for('main_routes.citas_admin'))  # Cambiado a citas_admin
-            
+            return redirect(url_for('main_routes.citas_admin'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error al actualizar cita: {str(e)}', 'danger')
+            flash(f'Error al actualizar la cita: {str(e)}', 'danger')
     
-    return render_template('admin/citas_admin.html',
-                         form=form,
-                         cita=cita,
-                         modo='editar',
-                         barberos=barberos,
-                         servicios=servicios,
-                         clientes=clientes)
+    # Si es GET, formatear la fecha para el campo datetime-local
+    if request.method == 'GET' and cita.fecha_hora:
+        form.fecha_hora.data = cita.fecha_hora
     
-    
+    return render_template('admin/editar_cita.html', form=form, cita=cita)
+
+
 @main_routes.route('/admin/citas/eliminar/<int:id>')
 @login_required
 @admin_required
@@ -343,10 +327,7 @@ def eliminar_cita_admin(id):
     
     
     
-    
-    
-    
-    
+
     
 @main_routes.route('/admin/citas/cambiar-estado/<int:id>', methods=['POST'])
 @login_required
@@ -357,15 +338,14 @@ def cambiar_estado_cita(id):
     
     if nuevo_estado not in ['pendiente', 'confirmada', 'completada', 'cancelada']:
         flash('Estado no válido', 'danger')
-        return redirect(url_for('main_routes.citas_admin'))  # Cambiado a citas_admin
+        return redirect(url_for('main_routes.citas_admin'))
     
+    estado_anterior = cita.estado
     cita.estado = nuevo_estado
     db.session.commit()
     
-    flash(f'Cita marcada como {nuevo_estado}', 'success')
-    return redirect(url_for('main_routes.citas_admin'))  # Cambiado a citas_admin   
-    
-    
+    flash(f'Cita cambiada de {estado_anterior} a {nuevo_estado}', 'success')
+    return redirect(url_for('main_routes.citas_admin'))
 
 
 
@@ -491,41 +471,150 @@ def marcar_completada(cita_id):
 
 
 
-
-
-
-
-##ventas html
-@main_routes.route('/ventas', methods=['GET', 'POST'])
+@main_routes.route('/ventas', methods=['GET'])
 @login_required
+@role_required('admin', 'barbero')
 def ventas():
-    productos = Producto.query.filter(Producto.cantidad > 0).all()
+    # Obtener parámetros de filtro
+    fecha_inicio = request.args.get('fecha_inicio')
+    fecha_fin = request.args.get('fecha_fin')
+    metodo_pago = request.args.get('metodo_pago')
+    seller_id = request.args.get('seller_id')
+    
+    # Query base
+    query = Sale.query
+    
+    # Aplicar filtros
+    if fecha_inicio and fecha_fin:
+        fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+        fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d') + timedelta(days=1)
+        query = query.filter(Sale.fecha.between(fecha_inicio, fecha_fin))
+    if metodo_pago:
+        query = query.filter(Sale.metodo_pago == metodo_pago)
+    if seller_id:
+        query = query.filter(Sale.seller_id == seller_id)
+    
+    # Ordenar y paginar
+    ventas = query.order_by(Sale.fecha.desc()).paginate(
+        page=request.args.get('page', 1, type=int),
+        per_page=10
+    )
+    
+    # Obtener totales
+    totales = {
+        'subtotal': sum(v.subtotal for v in ventas.items),
+        'iva': sum(v.iva for v in ventas.items),
+        'descuento': sum(v.descuento for v in ventas.items),
+        'total': sum(v.total for v in ventas.items)
+    }
+    
+    return render_template('ventas/ventas.html', 
+                         ventas=ventas,
+                         totales=totales,
+                         fecha_inicio=fecha_inicio,
+                         fecha_fin=fecha_fin,
+                         metodo_pago=metodo_pago)
+
+
+
+
+
+
+@main_routes.route('/registrar-venta', methods=['GET', 'POST'])
+@login_required
+@role_required('admin', 'barbero')
+def registrar_venta():
+    form = SaleForm()
+    
+    # Configurar las opciones del select de clientes
+    form.cliente_id.choices = [(0, 'Cliente ocasional')] + [
+        (u.id, f"{u.username} ({u.email})") 
+        for u in User.query.filter_by(role='cliente').all()
+    ]
+    
+    # Obtener productos disponibles con paginación
+    productos_disponibles = Producto.query.filter(
+        Producto.cantidad > 0
+    ).paginate(
+        page=request.args.get('page', 1, type=int),
+        per_page=9
+    )
     
     if request.method == 'POST':
-        producto_id = request.form.get('producto_id')
-        cantidad = int(request.form.get('cantidad', 1))
-        
-        producto = Producto.query.get(producto_id)
-        if producto and producto.cantidad >= cantidad:
-            producto.cantidad -= cantidad
-            venta = Venta(
-                cliente_id=current_user.id,
-                producto_id=producto.id,
-                cantidad=cantidad,
-                precio_unitario=producto.precio,
-                total=producto.precio * cantidad,
-                fecha_venta=datetime.utcnow()
-            )
-            db.session.add(venta)
-            db.session.commit()
-            flash('Venta registrada exitosamente!', 'success')
-            return redirect(url_for('main_routes.ventas'))
-        flash('No hay suficiente stock', 'danger')
+        if request.is_json:
+            try:
+                data = request.get_json()
+                
+                nueva_venta = Sale(
+                    seller_id=current_user.id,
+                    cliente_id=data.get('cliente_id'),
+                    metodo_pago=data.get('metodo_pago'),
+                    subtotal=float(data.get('subtotal')),
+                    iva=float(data.get('iva')),
+                    total=float(data.get('total')),
+                    descuento=float(data.get('descuento', 0)),
+                    estado='completada',
+                    origen='presencial',
+                    fecha=datetime.now() 
+                )
+                
+                db.session.add(nueva_venta)
+                db.session.flush()
+                
+                # Procesar detalles de venta
+                for item in data.get('productos', []):
+                    producto = Producto.query.get(item['id'])
+                    if not producto or producto.cantidad < item['cantidad']:
+                        raise ValueError(f'Stock insuficiente para {producto.nombre if producto else "producto"}')
+                    
+                    detalle = SaleDetail(
+                        venta_id=nueva_venta.id,
+                        producto_id=producto.id,
+                        cantidad=item['cantidad'],
+                        precio_unitario=item['precio'],
+                        subtotal=item['subtotal']
+                    )
+                    
+                    db.session.add(detalle)
+                    producto.cantidad -= item['cantidad']
+                
+                db.session.commit()
+                return jsonify({'success': True, 'message': 'Venta registrada exitosamente'})
+                
+            except Exception as e:
+                db.session.rollback()
+                return jsonify({'success': False, 'message': str(e)}), 400
     
-    return render_template('shared/ventas.html', productos=productos)
+    return render_template('ventas/registrar_venta.html', 
+                         form=form,
+                         productos_disponibles=productos_disponibles)
 
 
-
+@main_routes.route('/ventas/eliminar/<int:venta_id>', methods=['POST'])
+@login_required
+def eliminar_venta(venta_id):
+    try:
+        venta = Sale.query.get_or_404(venta_id)
+        
+        # First restore product stock
+        for detalle in venta.detalles:
+            producto = detalle.producto
+            if producto:
+                producto.cantidad += detalle.cantidad
+        
+        # Delete all sale details first
+        SaleDetail.query.filter_by(venta_id=venta_id).delete()
+        
+        # Then delete the sale
+        db.session.delete(venta)
+        db.session.commit()
+        
+        flash('Venta eliminada correctamente', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar la venta: {str(e)}', 'danger')
+    
+    return redirect(url_for('main_routes.ventas'))
 
 ##CREAR 
 @main_routes.route('/agregar_producto', methods=['GET', 'POST'])
@@ -699,9 +788,124 @@ def registrar_barbero():
 @login_required
 @admin_required
 def ver_reportes():
-    return render_template('reportes/reportes.html')
+    # Obtener parámetros de filtro
+    fecha_inicio = request.args.get('fecha_inicio', datetime.now().replace(day=1).strftime('%Y-%m-%d'))
+    fecha_fin = request.args.get('fecha_fin', datetime.now().strftime('%Y-%m-%d'))
+    barbero_id = request.args.get('barbero_id')
+    tipo = request.args.get('tipo')
 
+    # Convertir fechas
+    fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+    fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d')
 
+    # Obtener estadísticas de barberos
+    estadisticas_barberos = db.session.query(
+        User,
+        db.func.count(Cita.id).label('total_citas'),
+        db.func.count(db.case([(Cita.estado == 'completada', 1)])).label('citas_completadas'),
+        db.func.count(db.case([(Cita.estado == 'pendiente', 1)])).label('citas_pendientes')
+    ).outerjoin(Cita, User.id == Cita.barbero_id)\
+    .filter(User.role.in_(['barbero', 'admin']))\
+    .filter(Cita.fecha_hora.between(fecha_inicio, fecha_fin) if barbero_id else True)\
+    .group_by(User.id)\
+    .order_by(db.func.count(Cita.id).desc())\
+    .all()
+
+    # Análisis de clientes
+    total_clientes = User.query.filter_by(role='cliente').count()
+    clientes_nuevos = User.query.filter(
+        User.role == 'cliente',
+        User.fecha_registro >= datetime.now() - timedelta(days=30)
+    ).count()
+
+    # Análisis de citas
+    query_citas = Cita.query.filter(Cita.fecha_hora.between(fecha_inicio, fecha_fin))
+    if barbero_id:
+        query_citas = query_citas.filter_by(barbero_id=barbero_id)
+
+    total_citas = query_citas.count()
+    citas_pendientes = query_citas.filter_by(estado='pendiente').count()
+    citas_completadas = query_citas.filter_by(estado='completada').count()
+
+    # Análisis de inventario
+    productos = Producto.query.all()
+    total_productos = len(productos)
+    cantidad_total = sum(p.cantidad for p in productos)
+    inversion_total = sum(p.cantidad * p.costo for p in productos)
+    valor_inventario = sum(p.cantidad * p.precio for p in productos)
+
+    # Ventas por período
+    ventas = Sale.query.filter(Sale.fecha.between(fecha_inicio, fecha_fin))
+    total_ventas = ventas.with_entities(db.func.sum(Sale.total)).scalar() or 0
+
+    # Producto más vendido en el período
+    producto_mas_vendido = db.session.query(
+        Producto.nombre,
+        db.func.sum(SaleDetail.cantidad).label('total_vendido')
+    ).join(SaleDetail)\
+    .join(Sale)\
+    .filter(Sale.fecha.between(fecha_inicio, fecha_fin))\
+    .group_by(Producto.id, Producto.nombre)\
+    .order_by(db.func.sum(SaleDetail.cantidad).desc())\
+    .first()
+
+    # Barbero con más citas en el período
+    barbero_mas_citas = db.session.query(
+        User.username,
+        db.func.count(Cita.id).label('total_citas')
+    ).join(Cita, User.id == Cita.barbero_id)\
+    .filter(User.role == 'barbero')\
+    .filter(Cita.fecha_hora.between(fecha_inicio, fecha_fin))\
+    .group_by(User.id, User.username)\
+    .order_by(db.func.count(Cita.id).desc())\
+    .first()
+
+    # Cálculo de ingresos y gastos
+    # Ingresos por ventas
+    ventas_periodo = Sale.query.filter(Sale.fecha.between(fecha_inicio, fecha_fin)).all()
+    ingresos_ventas = sum(venta.total for venta in ventas_periodo)
+    
+    # Ingresos por citas completadas
+    citas_periodo = Cita.query.filter(
+        Cita.fecha_hora.between(fecha_inicio, fecha_fin),
+        Cita.estado == 'completada'
+    ).all()
+    ingresos_citas = len(citas_periodo) * 150  # $150 por cita
+
+    # Gastos por inventario
+    productos_periodo = Producto.query.filter(
+        Producto.fecha_actualizacion.between(fecha_inicio, fecha_fin)
+    ).all()
+    gastos_totales = sum(producto.costo * producto.cantidad for producto in productos_periodo)
+
+    # Total de ingresos
+    ingresos_totales = ingresos_ventas + ingresos_citas
+
+    # Obtener lista de barberos para el filtro
+    barberos = User.query.filter_by(role='barbero').all()
+
+    return render_template('reportes/reportes.html',
+        total_clientes=total_clientes,
+        clientes_nuevos=clientes_nuevos,
+        total_citas=total_citas,
+        citas_pendientes=citas_pendientes,
+        citas_completadas=citas_completadas,
+        total_productos=total_productos,
+        cantidad_total=cantidad_total,
+        inversion_total=inversion_total,
+        valor_inventario=valor_inventario,
+        total_ventas=total_ventas,
+        producto_mas_vendido=producto_mas_vendido,
+        barbero_mas_citas=barbero_mas_citas,
+        ingresos_totales=ingresos_totales,
+        gastos_totales=gastos_totales,
+        ingresos_citas=ingresos_citas,
+        ingresos_ventas=ingresos_ventas,
+        barberos=barberos,
+        fecha_inicio=fecha_inicio.strftime('%Y-%m-%d'),
+        fecha_fin=fecha_fin.strftime('%Y-%m-%d'),
+        estadisticas_barberos=estadisticas_barberos
+    )
 
 
 
@@ -861,100 +1065,6 @@ def completar_perfil():
     
     return render_template('cliente/completar_perfil.html', form=form)
 
-
-
-
-
-#productos historicos ventas
-
-@main_routes.route('/registro_ventas')
-@login_required
-@admin_required  # Solo admins pueden ver el histórico completo
-def registro_ventas():
-    page = request.args.get('page', 1, type=int)
-    
-    # Usar el nuevo modelo Sale en lugar del antiguo Venta
-    ventas = Sale.query.order_by(Sale.fecha.desc()).paginate(page=page, per_page=10)
-    
-    return render_template('admin/registro_ventas.html', ventas=ventas)
-
-
-
-
-##proceso venta productos y boton finalizar venta
-@main_routes.route('/registrar-venta', methods=['GET', 'POST'])
-@login_required
-@role_required('admin', 'barbero')
-def registrar_venta():
-    form = SaleForm()
-    
-    # Configurar clientes
-    form.cliente_id.choices = [(0, 'Venta sin cliente registrado')] + [
-        (u.id, f"{u.username} - {u.phone or 'Sin teléfono'}")
-        for u in User.query.filter_by(role='cliente').order_by(User.username).all()
-    ]
-    
-    if form.validate_on_submit():
-        try:
-            if not form.productos_json.data:
-                flash('Debes agregar al menos un producto', 'danger')
-                return redirect(url_for('main_routes.registrar_venta'))
-            
-            productos_data = json.loads(form.productos_json.data)
-            
-            # Validación de stock
-            for item in productos_data:
-                producto = Producto.query.get(item['id'])
-                if not producto or producto.cantidad < item['cantidad']:
-                    flash(f'Stock insuficiente para {producto.nombre if producto else "producto"}', 'danger')
-                    return redirect(url_for('main_routes.registrar_venta'))
-            
-            # Crear venta
-            nueva_venta = Sale(
-                seller_id=current_user.id,
-                cliente_id=form.cliente_id.data if form.cliente_id.data != 0 else None,
-                metodo_pago=form.metodo_pago.data,
-                subtotal=sum(item['subtotal'] for item in productos_data),
-                iva=sum(item['subtotal'] for item in productos_data) * 0.16,
-                total=sum(item['subtotal'] for item in productos_data) * 1.16,
-                origen='presencial',
-                fecha=datetime.now()
-            )
-            db.session.add(nueva_venta)
-            db.session.flush()
-            
-            # Procesar detalles
-            for item in productos_data:
-                producto = Producto.query.get(item['id'])
-                detalle = SaleDetail(
-                    venta_id=nueva_venta.id,
-                    producto_id=producto.id,
-                    cantidad=item['cantidad'],
-                    precio_unitario=item['precio'],
-                    subtotal=item['subtotal']
-                )
-                db.session.add(detalle)
-                producto.cantidad -= item['cantidad']
-            
-            db.session.commit()
-            
-            # Cambio clave: Redirección con mensaje flash
-            flash('¡Venta registrada exitosamente!', 'success')
-            return redirect(url_for('main_routes.registro_ventas'))  # Asegúrate que esta ruta exista
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error al registrar venta: {str(e)}', 'danger')
-            app.logger.error(f'Error en registrar_venta: {str(e)}')
-            return redirect(url_for('main_routes.registrar_venta'))
-    
-    # GET request
-    page = request.args.get('page', 1, type=int)
-    productos_disponibles = Producto.query.filter(Producto.cantidad > 0)\
-                           .order_by(Producto.nombre)\
-                           .paginate(page=page, per_page=12)
-    
-    return render_template('ventas/registrar_venta.html', form=form, productos_disponibles=productos_disponibles)
 
 
 @main_routes.route('/api/clientes')

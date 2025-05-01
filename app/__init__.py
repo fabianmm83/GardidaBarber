@@ -20,6 +20,7 @@ def create_app():
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
+    Config.print_database_info()
     # Importa blueprints después de la configuración
     from app.routes import main_routes  # Importa blueprint de routes
     from app.auth import auth_routes  # Si tienes rutas de autenticación, importa el blueprint de auth

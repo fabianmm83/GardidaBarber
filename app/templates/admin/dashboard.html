@@ -4,9 +4,9 @@
 <div class="container-fluid mt-4">
     <h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Panel de Administración</h2>
     
-    <!-- Tarjetas de Resumen Mejoradas -->
+    <!-- Summary Cards -->
     <div class="row">
-        <!-- Estadísticas de Clientes -->
+        <!-- Client Statistics -->
         <div class="col-md-3 mb-4">
             <div class="card text-white bg-primary h-100">
                 <div class="card-body">
@@ -29,7 +29,7 @@
             </div>
         </div>
         
-        <!-- Estadísticas de Ventas -->
+        <!-- Sales Statistics -->
         <div class="col-md-3 mb-4">
             <div class="card text-white bg-success h-100">
                 <div class="card-body">
@@ -46,13 +46,14 @@
                     </small>
                 </div>
                 <div class="card-footer bg-transparent border-0">
-                    <a href="{{ url_for('main_routes.registro_ventas') }}" 
-                       class="text-white">Ver ventas <i class="fas fa-arrow-right"></i></a>
+                    <a href="{{ url_for('main_routes.ventas') }}" class="text-white">
+                        Ver ventas <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- Citas del Día -->
+        <!-- Appointments -->
         <div class="col-md-3 mb-4">
             <div class="card text-white bg-info h-100">
                 <div class="card-body">
@@ -75,7 +76,7 @@
             </div>
         </div>
 
-        <!-- Inventario -->
+        <!-- Inventory -->
         <div class="col-md-3 mb-4">
             <div class="card text-white bg-warning h-100">
                 <div class="card-body">
@@ -99,14 +100,14 @@
         </div>
     </div>
 
-    <!-- Acciones Rápidas Mejoradas -->
+    <!-- Quick Actions -->
     <div class="card mt-4 shadow-sm">
         <div class="card-header bg-white">
             <h5 class="mb-0"><i class="fas fa-bolt"></i> Acciones Rápidas</h5>
         </div>
         <div class="card-body">
             <div class="row g-3">
-                <!-- Nueva Venta -->
+                <!-- New Sale -->
                 <div class="col-md-2">
                     <a href="{{ url_for('main_routes.registrar_venta') }}" 
                        class="btn btn-primary btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
@@ -115,7 +116,7 @@
                     </a>
                 </div>
                 
-                <!-- Nuevo Producto -->
+                <!-- New Product -->
                 <div class="col-md-2">
                     <a href="{{ url_for('main_routes.agregar_producto') }}" 
                        class="btn btn-success btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
@@ -124,7 +125,7 @@
                     </a>
                 </div>
                 
-                <!-- Nuevo Barbero -->
+                <!-- New Barber -->
                 <div class="col-md-2">
                     <a href="{{ url_for('main_routes.registrar_barbero') }}" 
                        class="btn btn-info btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
@@ -133,7 +134,7 @@
                     </a>
                 </div>
                 
-                <!-- Registrar Cita -->
+                <!-- Register Appointment -->
                 <div class="col-md-2">
                     <a href="{{ url_for('main_routes.nueva_cita_admin') }}" 
                        class="btn btn-danger btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
@@ -142,7 +143,7 @@
                     </a>
                 </div>
 
-                <!-- Ver Reportes -->
+                <!-- View Reports -->
                 <div class="col-md-2">
                     <a href="{{ url_for('main_routes.ver_reportes') }}" 
                        class="btn btn-warning btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
@@ -151,7 +152,7 @@
                     </a>
                 </div>
                 
-                <!-- Ver Citas -->
+                <!-- View Appointments -->
                 <div class="col-md-2">
                     <a href="{{ url_for('main_routes.citas_admin') }}" 
                        class="btn btn-secondary btn-lg btn-block d-flex align-items-center justify-content-center gap-2">
@@ -163,13 +164,14 @@
         </div>
     </div>
 
-    <!-- Lista de Últimas Ventas -->
+    <!-- Recent Activity Section -->
     <div class="row mt-4">
+        <!-- Recent Sales -->
         <div class="col-md-8">
             <div class="card shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="fas fa-history"></i> Últimas Ventas</h5>
-                    <a href="{{ url_for('main_routes.registro_ventas') }}" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ url_for('main_routes.ventas') }}" class="btn btn-sm btn-outline-primary">
                         Ver todas
                     </a>
                 </div>
@@ -178,6 +180,7 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
+                                <th>Vendedor</th>
                                 <th>Cliente</th>
                                 <th>Total</th>
                                 <th>Fecha</th>
@@ -188,11 +191,14 @@
                             {% for venta in ultimas_ventas %}
                             <tr>
                                 <td>#{{ venta.id }}</td>
+                                <td>{{ venta.seller.username }}</td>
                                 <td>{{ venta.cliente.username if venta.cliente else 'Cliente General' }}</td>
                                 <td>${{ "%.2f"|format(venta.total) }}</td>
                                 <td>{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
                                 <td>
-                                    <span class="badge bg-success">Completada</span>
+                                    <span class="badge bg-{{ 'success' if venta.estado == 'completada' else 'warning' }}">
+                                        {{ venta.estado|title }}
+                                    </span>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -202,7 +208,7 @@
             </div>
         </div>
 
-        <!-- Próximas Citas -->
+        <!-- Upcoming Appointments -->
         <div class="col-md-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
@@ -215,8 +221,7 @@
                             <h6 class="mb-1">{{ cita.cliente.username if cita.cliente else 'Cliente General' }}</h6>
                             <small>{{ cita.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</small>
                         </div>
-                        <!-- Cambiar esta línea -->
-                        <p class="mb-1">Barbero: {{ User.query.get(cita.barbero_id).username if User.query.get(cita.barbero_id) else 'No asignado' }}</p>
+                        <p class="mb-1">Barbero: {{ cita.barbero.nombre if cita.barbero else 'No asignado' }}</p>
                         <small>Servicio: {{ cita.servicio.nombre }}</small>
                     </div>
                     {% endfor %}
